@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tu Laburo Vale — Calculadora de precios para diseñadores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cuanto-cobrar.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>Tu Laburo <span class="accentword">Vale</span></h1>
+    <p>Calculá el precio justo de tu próximo proyecto según tu tiempo, tus gastos y tu ganancia — y descargalo en un PDF listo para enviar.</p>
+  </div>
+
+  <nav class="stepper" id="stepper" aria-label="Secciones del formulario"></nav>
+
+  <div class="layout">
+
+    <div class="col-form">
+
+      <!-- Datos del proyecto -->
+      <div class="card" id="sec-datos">
+        <div class="section-num"><div class="n">1</div><h2>Datos del proyecto</h2></div>
+        <div class="grid-3">
+          <div class="field">
+            <label class="field-label" for="f-designer">Tu nombre / estudio</label>
+            <input type="text" id="f-designer" placeholder="Ej. Estudio Lima">
+          </div>
+          <div class="field">
+            <label class="field-label" for="f-client">Nombre del cliente</label>
+            <input type="text" id="f-client" placeholder="Ej. Panadería Sol">
+          </div>
+          <div class="field">
+            <label class="field-label" for="f-project">Nombre del proyecto</label>
+            <input type="text" id="f-project" placeholder="Ej. Rediseño de marca">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tipo de cliente -->
+      <div class="card" id="sec-cliente">
+        <div class="section-num"><div class="n">2</div><h2>¿Quién es tu cliente?</h2></div>
+        <div class="section-hint">Esto ajusta el precio final según la capacidad de pago del cliente.</div>
+        <div class="pillrow" id="client-pills">
+          <label class="pill active" data-mult="1">
+            <input type="radio" name="clienttype" checked>
+            <div class="t">Emprendimiento</div>
+            <div class="d">Recién empieza · ×1.0</div>
+          </label>
+          <label class="pill" data-mult="1.3">
+            <input type="radio" name="clienttype">
+            <div class="t">Negocio</div>
+            <div class="d">Ya establecido · ×1.3</div>
+          </label>
+          <label class="pill" data-mult="1.6">
+            <input type="radio" name="clienttype">
+            <div class="t">Empresa</div>
+            <div class="d">Corporativo · ×1.6</div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Tipo de diseño -->
+      <div class="card" id="sec-tipo">
+        <div class="section-num"><div class="n">3</div><h2>Tipo de diseño</h2></div>
+        <div class="section-hint">Elegí una categoría para precargar tareas típicas — después podés editarlas.</div>
+        <div class="field" style="margin-bottom:0;">
+          <select id="f-designtype"></select>
+        </div>
+      </div>
+
+      <!-- Tarea y tiempo -->
+      <div class="card" id="sec-tiempo">
+        <div class="section-num"><div class="n">4</div><h2>Tu tiempo</h2></div>
+        <div class="section-hint">Sumá cada tarea que te va a tomar este trabajo y cuántas horas te lleva.</div>
+
+        <div class="field">
+          <label class="field-label" for="f-rate">Tu tarifa por hora</label>
+          <div class="grid-2" style="max-width:260px;">
+            <input type="text" id="f-currency" value="$" style="max-width:60px;" aria-label="Símbolo de moneda">
+            <input type="number" id="f-rate" value="10" min="0" step="0.5">
+          </div>
+        </div>
+
+        <label class="field-label">Tareas</label>
+        <div id="tasks-list"></div>
+        <button class="addbtn" id="add-task" type="button">+ Agregar tarea</button>
+
+        <div class="subtotal-line"><span>Costo de tu tiempo</span><b id="time-cost-display">$0</b></div>
+      </div>
+
+      <!-- Gastos -->
+      <div class="card" id="sec-gastos">
+        <div class="section-num"><div class="n">5</div><h2>Tus gastos</h2></div>
+        <div class="section-hint">Programas, IA, recursos o colaboradores que usás para este proyecto. Si no tenés, elegí «Ninguno».</div>
+
+        <div id="expenses-list"></div>
+        <button class="addbtn" id="add-expense" type="button">+ Agregar gasto</button>
+
+        <div class="subtotal-line"><span>Total de gastos</span><b id="expense-cost-display">$0</b></div>
+      </div>
+
+      <!-- Ganancia -->
+      <div class="card" id="sec-ganancia">
+        <div class="section-num"><div class="n">6</div><h2>Tu ganancia deseada</h2></div>
+        <div class="section-hint">Un porcentaje extra sobre tu tiempo y tus gastos.</div>
+        <div class="profit-input">
+          <input type="range" id="f-profit" min="0" max="150" value="35">
+          <div class="val" id="profit-val">35%</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Resumen -->
+    <div class="summary" id="summary-panel">
+      <h3>Resumen de la cotización</h3>
+      <div class="sumrow"><span>Costo de tiempo</span><span id="s-time">$0</span></div>
+      <div class="sumrow"><span>Gastos</span><span id="s-expenses">$0</span></div>
+      <div class="sumrow"><span>Ganancia (<span id="s-profit-pct">35</span>%)</span><span id="s-profit">$0</span></div>
+      <div class="sumrow mult"><span>Ajuste por tipo de cliente</span><span id="s-mult">×1.0</span></div>
+
+      <div class="total-block">
+        <div class="label">Precio sugerido</div>
+        <div class="amount" id="s-total">$0</div>
+        <div class="perhour" id="s-perhour"></div>
+      </div>
+
+      <button class="cta" id="btn-pdf" type="button">↓ Descargar cotización en PDF</button>
+      <div class="pdf-error" id="pdf-error"></div>
+      <button class="cta ghost" id="btn-reset" type="button">Empezar de nuevo</button>
+
+      <div class="footnote">Los valores se guardan solo en tu navegador. Nada se envía a ningún servidor.</div>
+    </div>
+
+  </div>
+</div>
+
+<aside class="social-side" id="side-socials" aria-label="Redes sociales"></aside>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">Tu Laburo Vale — un proyecto de <a href="https://barraledesign.netlify.app/" target="_blank" rel="noopener noreferrer">Barrale Design</a></div>
+    <div class="footer-socials" id="footer-socials"></div>
+  </div>
+</footer>
+
+<div class="mobilebar">
+  <div>
+    <span class="amtlabel">Precio sugerido</span>
+    <span class="amt" id="m-total">$0</span>
+  </div>
+  <button id="m-pdf" type="button">Descargar PDF</button>
+</div>
+<div class="m-pdf-error" id="m-pdf-error"></div>
+
+<script src="cuanto-cobrar.js"></script>
+
+</body>
+</html>
